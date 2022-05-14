@@ -114,13 +114,6 @@ New:
 			goto Home
 		}
 		p = promptui.Prompt{
-			Label: "Desc",
-		}
-		desc, err := p.Run()
-		if err != nil {
-			goto Home
-		}
-		p = promptui.Prompt{
 			Label: "Answer",
 			Validate: func(s string) error {
 				if s == "" {
@@ -130,6 +123,13 @@ New:
 			},
 		}
 		answer, err := p.Run()
+		if err != nil {
+			goto Home
+		}
+		p = promptui.Prompt{
+			Label: "Desc",
+		}
+		desc, err := p.Run()
 		if err != nil {
 			goto Home
 		}

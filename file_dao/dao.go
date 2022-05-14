@@ -14,7 +14,7 @@ import (
 func NewDao(f *os.File) (dao memo.Dao, err error) {
 	d := &fileDao{
 		f:  f,
-		qs: make(map[uint]*memo.Question),
+		qm: make(map[uint]*memo.Question),
 	}
 
 	if err := d.read(); err != nil {
@@ -25,8 +25,9 @@ func NewDao(f *os.File) (dao memo.Dao, err error) {
 }
 
 type fileDao struct {
-	f  *os.File
-	qs map[uint]*memo.Question
+	f     *os.File
+	qm    map[uint]*memo.Question
+	maxID uint
 }
 
 func (d *fileDao) read() (err error) {
@@ -35,30 +36,33 @@ func (d *fileDao) read() (err error) {
 		return err
 	}
 
-	qss := []*memo.Question{}
-	err = json.Unmarshal(b, &qss)
+	qs := []*memo.Question{}
+	err = json.Unmarshal(b, &qs)
 	if err != nil {
 		return err
 	}
 
-	for i, _ := range qss {
-		q := qss[i]
-		d.qs[q.ID] = q
+	for i, _ := range qs {
+		q := qs[i]
+		d.qm[q.ID] = q
+		if q.ID > d.maxID {
+			d.maxID = q.ID
+		}
 	}
 
 	return nil
 }
 
 func (d *fileDao) save() (err error) {
-	qss := make([]*memo.Question, 0, len(d.qs))
-	for i, _ := range d.qs {
-		qss = append(qss, d.qs[i])
+	qs := make([]*memo.Question, 0, len(d.qm))
+	for i, _ := range d.qm {
+		qs = append(qs, d.qm[i])
 	}
-	sort.Slice(qss, func(i, j int) bool {
-		return qss[i].ID < qss[j].ID
+	sort.Slice(qs, func(i, j int) bool {
+		return qs[i].ID < qs[j].ID
 	})
 
-	b, err := json.MarshalIndent(qss, "", "  ")
+	b, err := json.MarshalIndent(qs, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -75,31 +79,25 @@ func (d *fileDao) save() (err error) {
 }
 
 func (d *fileDao) nextID() uint {
-	var maxID uint
-	for id, _ := range d.qs {
-		if id > maxID {
-			maxID = id
-		}
-	}
-
-	return maxID + 1
+	d.maxID++
+	return d.maxID
 }
 
 func (d *fileDao) New(q *memo.Question) (rq *memo.Question, err error) {
 	q.ID = d.nextID()
-	d.qs[q.ID] = q
+	d.qm[q.ID] = q
 	err = d.save()
 	return q, err
 }
 
 func (d *fileDao) Get(id uint) (rq *memo.Question, err error) {
-	return d.qs[id], nil
+	return d.qm[id], nil
 }
 
 func (d *fileDao) GetTheNextReadyToPractice() (rq *memo.Question, err error) {
 	now := time.Now()
-	readys := make([]uint, 0, len(d.qs))
-	for id, q := range d.qs {
+	readys := make([]uint, 0, len(d.qm))
+	for id, q := range d.qm {
 		if q.NextPracticeTime.Sub(now) < 0 {
 			readys = append(readys, id)
 		}
@@ -108,22 +106,22 @@ func (d *fileDao) GetTheNextReadyToPractice() (rq *memo.Question, err error) {
 		return nil, nil
 	}
 	rid := readys[rand.Intn(len(readys))]
-	return d.qs[rid], nil
+	return d.qm[rid], nil
 }
 
 func (d *fileDao) Update(id uint, q *memo.Question) (err error) {
-	d.qs[id] = q
+	d.qm[id] = q
 	return d.save()
 }
 
 func (d *fileDao) Delete(id uint) (err error) {
-	delete(d.qs, id)
+	delete(d.qm, id)
 	return d.save()
 }
 
 func (d *fileDao) GetTags() (tags []string, err error) {
 	m := make(map[string]struct{})
-	for _, q := range d.qs {
+	for _, q := range d.qm {
 		for _, t := range q.Tags {
 			m[t] = struct{}{}
 		}
