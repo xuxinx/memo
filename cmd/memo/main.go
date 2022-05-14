@@ -133,7 +133,7 @@ New:
 		if err != nil {
 			goto Home
 		}
-		_, err = serv.NewQuestion(inputTags, question, desc, answer)
+		_, err = serv.NewQuestion(inputTags, question, toMultipleLines(desc), toMultipleLines(answer))
 		if err != nil {
 			panic(err)
 		}
@@ -241,4 +241,9 @@ func clearScreen() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
+}
+
+func toMultipleLines(in string) string {
+	s := strings.Split(in, `\\\`)
+	return strings.Join(s, "\n")
 }
