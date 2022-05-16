@@ -1,5 +1,5 @@
 # memo
-memo is a command-line tool to help memorize via a simple forgetting curve mnemonic. 
+memo is a command-line application to help memorize via a simple forgetting curve mnemonic. 
 
 # Install
 ```

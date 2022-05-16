@@ -25,9 +25,14 @@ func NewDao(f *os.File) (dao memo.Dao, err error) {
 }
 
 type fileDao struct {
-	f     *os.File
-	qm    map[uint]*memo.Question
-	maxID uint
+	f      *os.File
+	qm     map[uint]*memo.Question
+	maxQID uint
+}
+
+type data struct {
+	Questions []*memo.Question
+	// TODO Tags
 }
 
 func (d *fileDao) read() (err error) {
@@ -36,17 +41,17 @@ func (d *fileDao) read() (err error) {
 		return err
 	}
 
-	qs := []*memo.Question{}
-	err = json.Unmarshal(b, &qs)
+	da := data{}
+	err = json.Unmarshal(b, &da)
 	if err != nil {
 		return err
 	}
 
-	for i, _ := range qs {
-		q := qs[i]
+	for i, _ := range da.Questions {
+		q := da.Questions[i]
 		d.qm[q.ID] = q
-		if q.ID > d.maxID {
-			d.maxID = q.ID
+		if q.ID > d.maxQID {
+			d.maxQID = q.ID
 		}
 	}
 
@@ -62,7 +67,9 @@ func (d *fileDao) save() (err error) {
 		return qs[i].ID < qs[j].ID
 	})
 
-	b, err := json.MarshalIndent(qs, "", "  ")
+	b, err := json.MarshalIndent(&data{
+		Questions: qs,
+	}, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -79,8 +86,8 @@ func (d *fileDao) save() (err error) {
 }
 
 func (d *fileDao) nextID() uint {
-	d.maxID++
-	return d.maxID
+	d.maxQID++
+	return d.maxQID
 }
 
 func (d *fileDao) New(q *memo.Question) (rq *memo.Question, err error) {
@@ -117,20 +124,4 @@ func (d *fileDao) Update(id uint, q *memo.Question) (err error) {
 func (d *fileDao) Delete(id uint) (err error) {
 	delete(d.qm, id)
 	return d.save()
-}
-
-func (d *fileDao) GetTags() (tags []string, err error) {
-	m := make(map[string]struct{})
-	for _, q := range d.qm {
-		for _, t := range q.Tags {
-			m[t] = struct{}{}
-		}
-	}
-	for t, _ := range m {
-		tags = append(tags, t)
-	}
-	sort.Slice(tags, func(i, j int) bool {
-		return tags[i] < tags[j]
-	})
-	return tags, nil
 }

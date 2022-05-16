@@ -98,7 +98,3 @@ func (me *Memo) MarkQuestion(id uint, mark Mark) (err error) {
 
 	return me.UpdateQuestion(id, q)
 }
-
-func (me *Memo) GetTags() (tags []string, err error) {
-	return me.dao.GetTags()
-}

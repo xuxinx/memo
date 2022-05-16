@@ -6,6 +6,4 @@ type Dao interface {
 	GetTheNextReadyToPractice() (rq *Question, err error)
 	Update(id uint, q *Question) (err error)
 	Delete(id uint) (err error)
-
-	GetTags() (tags []string, err error)
 }
