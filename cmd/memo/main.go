@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	fPath     = "./memo.json"
-	enterChar = "¬"
+	fPath = "./memo.json"
 )
 
 var (

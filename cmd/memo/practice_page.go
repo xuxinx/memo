@@ -98,6 +98,39 @@ func (p *practicePage) update(m *model, msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.fidx = 0
 			p.answerShowed = false
 			return m, nil
+		case "s":
+			if !p.answerShowed && p.q != nil {
+				p.fidx = 0
+				p.answerShowed = true
+			}
+			return m, nil
+		case "r":
+			if p.answerShowed {
+				err := serv.MarkQuestion(p.q.ID, memo.Mark_Remember)
+				if err != nil {
+					panic(err)
+				}
+				p.getTheNextReadyToPracticeQuestion()
+			}
+			return m, nil
+		case "n":
+			if p.answerShowed {
+				err := serv.MarkQuestion(p.q.ID, memo.Mark_NotSure)
+				if err != nil {
+					panic(err)
+				}
+				p.getTheNextReadyToPracticeQuestion()
+			}
+			return m, nil
+		case "f":
+			if p.answerShowed {
+				err := serv.MarkQuestion(p.q.ID, memo.Mark_Forget)
+				if err != nil {
+					panic(err)
+				}
+				p.getTheNextReadyToPracticeQuestion()
+			}
+			return m, nil
 		case "ctrl+h":
 			m.page = pageHelp
 			m.pagers[m.page] = initHelpPage(
@@ -105,6 +138,10 @@ func (p *practicePage) update(m *model, msg tea.Msg) (tea.Model, tea.Cmd) {
 ctrl+c / q: back to previous page
      j / k: move
      enter: select item 
+         s: show anser
+         r: mark as remember
+         n: mark as not_sure
+         f: mark as forget
                 `,
 				pagePractice,
 			)
@@ -159,4 +196,14 @@ func (p *practicePage) view(m *model) string {
 	}
 	b.WriteString("\n")
 	return b.String()
+}
+
+func (p *practicePage) getTheNextReadyToPracticeQuestion() {
+	q, err := serv.GetTheNextReadyToPracticeQuestion()
+	if err != nil {
+		panic(err)
+	}
+	p.q = q
+	p.fidx = 0
+	p.answerShowed = false
 }

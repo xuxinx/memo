@@ -20,6 +20,8 @@ const (
 	maxEditQuestionFidx = iota - 2
 )
 
+const enterChar = "¬"
+
 type editQuestionPage struct {
 	fidx   int
 	inputs []textinput.Model
@@ -58,7 +60,8 @@ func initEditQuestionPage(
 	answerIn.CursorStyle = cursorStyle
 	answerIn.Placeholder = "Answer"
 	answerIn.SetCursorMode(textinput.CursorStatic)
-	answerIn.SetValue(q.Answer)
+	answerVal := strings.Replace(q.Answer, "\n", enterChar, -1)
+	answerIn.SetValue(answerVal)
 
 	tagsIn.Focus()
 	qIn.Blur()
