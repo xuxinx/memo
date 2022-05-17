@@ -7,5 +7,11 @@ go install github.com/xuxinx/memo/cmd/memo@main
 ```
 
 # Usage
-https://user-images.githubusercontent.com/12792855/168322898-c2759f64-3152-4eff-99b8-3e0d41e248ec.mov
+vim-like key bindings.  
+press `ctrl+h` for each page's help info.  
+
+
+
+https://user-images.githubusercontent.com/12792855/168729928-061884ba-20b6-480d-9dd3-e85c6d2d9de8.mov
+
 
