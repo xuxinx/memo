@@ -3,7 +3,8 @@ package memo
 import "time"
 
 type Question struct {
-	ID uint
+	ID      uint
+	Deleted bool
 
 	Tags     []string
 	Question string

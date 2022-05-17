@@ -104,7 +104,11 @@ func (d *fileDao) Get(id uint) (rq *memo.Question, err error) {
 func (d *fileDao) GetAll() (rqs []*memo.Question, err error) {
 	rqs = make([]*memo.Question, 0, len(d.qm))
 	for k := range d.qm {
-		rqs = append(rqs, d.qm[k])
+		q := d.qm[k]
+		if q.Deleted {
+			continue
+		}
+		rqs = append(rqs, q)
 	}
 	sort.Slice(rqs, func(i, j int) bool {
 		return rqs[i].ID > rqs[j].ID
@@ -116,6 +120,9 @@ func (d *fileDao) GetTheNextReadyToPractice() (rq *memo.Question, err error) {
 	now := time.Now()
 	readys := make([]uint, 0, len(d.qm))
 	for id, q := range d.qm {
+		if q.Deleted {
+			continue
+		}
 		if q.NextPracticeTime.Sub(now) < 0 {
 			readys = append(readys, id)
 		}
@@ -133,6 +140,6 @@ func (d *fileDao) Update(id uint, q *memo.Question) (err error) {
 }
 
 func (d *fileDao) Delete(id uint) (err error) {
-	delete(d.qm, id)
+	d.qm[id].Deleted = true
 	return d.save()
 }
