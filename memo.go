@@ -47,6 +47,10 @@ func (me *Memo) GetQuestion(id uint) (rq *Question, err error) {
 	return me.dao.Get(id)
 }
 
+func (me *Memo) GetAllQuestions() (rqs []*Question, err error) {
+	return me.dao.GetAll()
+}
+
 func (me *Memo) GetTheNextReadyToPracticeQuestion() (rq *Question, err error) {
 	return me.dao.GetTheNextReadyToPractice()
 }

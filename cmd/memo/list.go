@@ -24,12 +24,14 @@ func newList(title string, items []list.Item) list.Model {
 }
 
 type listItem struct {
-	title   string
-	context map[string]interface{}
+	id          interface{}
+	title       string
+	filterValue string
+	value       interface{}
 }
 
 func (i listItem) FilterValue() string {
-	return i.title
+	return i.filterValue
 }
 
 type listItemDelegate struct{}
@@ -49,9 +51,9 @@ func (d listItemDelegate) Render(w io.Writer, m list.Model, index int, item list
 		return
 	}
 
-	str := fmt.Sprintf("  %d. %s", index+1, i.title)
+	str := fmt.Sprintf("  %s", i.title)
 	if index == m.Index() {
-		str = focusStyle.Render(fmt.Sprintf("> %d. %s", index+1, i.title))
+		str = focusStyle.Render(fmt.Sprintf("> %s", i.title))
 	}
 
 	fmt.Fprintf(w, str)

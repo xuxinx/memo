@@ -24,7 +24,7 @@ type practicePage struct {
 	q *memo.Question
 }
 
-func initPracticePage(loadQuestion bool) *practicePage {
+func initPracticePage(loadQuestion bool) pager {
 	p := &practicePage{}
 	if loadQuestion {
 		q, err := serv.GetTheNextReadyToPracticeQuestion()
@@ -98,13 +98,24 @@ func (p *practicePage) update(m *model, msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.fidx = 0
 			p.answerShowed = false
 			return m, nil
+		case "ctrl+h":
+			m.page = pageHelp
+			m.pagers[m.page] = initHelpPage(
+				`
+ctrl+c / q: back to previous page
+     j / k: move
+     enter: select item 
+                `,
+				pagePractice,
+			)
+			return m, nil
 		}
 	}
 
 	return m, nil
 }
 
-func (p *practicePage) view() string {
+func (p *practicePage) view(m *model) string {
 	var b strings.Builder
 	q := p.q
 	if q == nil {

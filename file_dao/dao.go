@@ -47,7 +47,7 @@ func (d *fileDao) read() (err error) {
 		return err
 	}
 
-	for i, _ := range da.Questions {
+	for i := range da.Questions {
 		q := da.Questions[i]
 		d.qm[q.ID] = q
 		if q.ID > d.maxQID {
@@ -60,7 +60,7 @@ func (d *fileDao) read() (err error) {
 
 func (d *fileDao) save() (err error) {
 	qs := make([]*memo.Question, 0, len(d.qm))
-	for i, _ := range d.qm {
+	for i := range d.qm {
 		qs = append(qs, d.qm[i])
 	}
 	sort.Slice(qs, func(i, j int) bool {
@@ -99,6 +99,17 @@ func (d *fileDao) New(q *memo.Question) (rq *memo.Question, err error) {
 
 func (d *fileDao) Get(id uint) (rq *memo.Question, err error) {
 	return d.qm[id], nil
+}
+
+func (d *fileDao) GetAll() (rqs []*memo.Question, err error) {
+	rqs = make([]*memo.Question, 0, len(d.qm))
+	for k := range d.qm {
+		rqs = append(rqs, d.qm[k])
+	}
+	sort.Slice(rqs, func(i, j int) bool {
+		return rqs[i].ID > rqs[j].ID
+	})
+	return rqs, nil
 }
 
 func (d *fileDao) GetTheNextReadyToPractice() (rq *memo.Question, err error) {

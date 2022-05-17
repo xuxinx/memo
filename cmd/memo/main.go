@@ -33,23 +33,29 @@ func main() {
 
 type page string
 
+type pager interface {
+	update(m *model, msg tea.Msg) (tea.Model, tea.Cmd)
+	view(m *model) string
+}
+
 type model struct {
 	page     page
+	pagers   map[page]pager
 	quitting bool
-
-	homePage        *homePage
-	newQuestionPage *newQuestionPage
-	practicePage    *practicePage
 }
 
 func initModel() *model {
+	pagers := make(map[page]pager)
+	pagers[pageHome] = initHomePage()
+	pagers[pagePractice] = initPracticePage(false)
+	pagers[pageList] = initListPage(false)
+	pagers[pageEditQuestion] = initEditQuestionPage(nil, "")
+	pagers[pageHelp] = initHelpPage("", "")
+
 	return &model{
 		page:     pageHome,
+		pagers:   pagers,
 		quitting: false,
-
-		homePage:        initHomePage(),
-		practicePage:    initPracticePage(false),
-		newQuestionPage: initNewQuestionPage(),
 	}
 }
 
@@ -58,29 +64,21 @@ func (m *model) Init() tea.Cmd {
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch m.page {
-	case pageHome:
-		return m.homePage.update(m, msg)
-	case pagePractice:
-		return m.practicePage.update(m, msg)
-	case pageNewQuestion:
-		return m.newQuestionPage.update(m, msg)
+	pager, ok := m.pagers[m.page]
+	if !ok {
+		panic("unknown page")
 	}
-	panic("unknown page Update")
+	return pager.update(m, msg)
 }
 
 func (m *model) View() string {
 	if m.quitting {
 		return "Bye Bye.\n"
 	}
-	switch m.page {
-	case pageHome:
-		return m.homePage.view()
-	case pagePractice:
-		return m.practicePage.view()
-	case pageNewQuestion:
-		return m.newQuestionPage.view()
-	}
 
-	panic("unknown page View")
+	pager, ok := m.pagers[m.page]
+	if !ok {
+		panic("unknown page")
+	}
+	return pager.view(m)
 }
